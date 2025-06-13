@@ -211,6 +211,14 @@
         width: 100% !important;
         max-width: 100% !important;
       }
+      button[type="submit"],
+      .submit-btn {
+        width: 100% !important;
+        margin-left: 0 !important;
+        margin-top: 1rem !important;
+        height: auto !important;
+        align-self: stretch !important;
+      }
     }
 
     .error-message {
@@ -232,8 +240,10 @@
       font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
-      margin-top: 1rem;
       transition: background 0.2s;
+      margin-left: 0.5rem;
+      height: 40px;
+      align-self: flex-end;
     }
 
     button[type="submit"]:hover,
@@ -283,10 +293,11 @@
             <option value="mobile">Mobile</option>
           </select>
         </div>
+        <button type="submit" class="submit-btn">Submit</button>
       </div>
       <div class="error-message" id="phone-error"></div>
+      <div class="error-message" id="ext-error"></div>
     </div>
-    <button type="submit" class="submit-btn">Submit</button>
   </form>
 
   <!-- Full JSON of all country codes -->
@@ -676,7 +687,20 @@
       btn.setAttribute('aria-expanded', 'false');
       const phoneInput = document.getElementById('phone-input');
       const phoneError = document.getElementById('phone-error');
+      const extInput = document.getElementById('ext-input');
+      const extError = document.getElementById('ext-error');
       const form = document.getElementById('main-form');
+      // Extension input validation: only numbers, max 6 digits
+      extInput.addEventListener('input', () => {
+        let value = extInput.value.replace(/\D/g, '');
+        if (value.length > 6) value = value.slice(0, 6);
+        extInput.value = value;
+        if (value.length > 0 && value.length > 6) {
+          extError.textContent = 'Extension must be up to 6 digits.';
+        } else {
+          extError.textContent = '';
+        }
+      });
       phoneInput.addEventListener('input', (e) => {
         let value = phoneInput.value.replace(/\D/g, '');
         if (value.length > 10) value = value.slice(0, 10);
@@ -698,17 +722,29 @@
       form.addEventListener('submit', (e) => {
         e.preventDefault();
         let value = phoneInput.value.replace(/\D/g, '');
+        let extValue = extInput.value;
+        let valid = true;
+        // Phone number validation
         if (!value) {
           phoneError.textContent = 'Phone number is required.';
           phoneInput.focus();
-          return false;
+          valid = false;
         } else if (value.length < 10) {
           phoneError.textContent = 'Please enter a 10-digit phone number.';
           phoneInput.focus();
-          return false;
+          valid = false;
         } else {
           phoneError.textContent = '';
         }
+        // Extension validation
+        if (extValue && !/^\d{1,6}$/.test(extValue)) {
+          extError.textContent = 'Extension must be 1 to 6 digits.';
+          extInput.focus();
+          valid = false;
+        } else {
+          extError.textContent = '';
+        }
+        if (!valid) return false;
         alert('Form submitted!');
       });
     });
